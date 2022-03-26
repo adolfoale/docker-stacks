@@ -8,7 +8,8 @@ ARG ROOT_CONTAINER=ubuntu:focal
 FROM $ROOT_CONTAINER
 
 LABEL maintainer="Jupyter Project <jupyter@googlegroups.com>"
-ARG NB_USER="jovyan"
+#ARG NB_USER="efx_container_user"
+ARG NB_USER="efx_container_user"
 ARG NB_UID="1000"
 ARG NB_GID="100"
 
@@ -68,7 +69,7 @@ RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashr
    # Add call to conda init script see https://stackoverflow.com/a/58081608/4413446
    echo 'eval "$(command conda shell.bash hook 2> /dev/null)"' >> /etc/skel/.bashrc
 
-# Create NB_USER with name jovyan user with UID=1000 and in the 'users' group
+# Create NB_USER with name efx_container_user user with UID=1000 and in the 'users' group
 # and make sure these dirs are writable by the `users` group.
 RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su && \
     sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers && \
@@ -87,7 +88,7 @@ ARG PYTHON_VERSION=default
 RUN mkdir "/home/${NB_USER}/work" && \
     fix-permissions "/home/${NB_USER}"
 
-# Install conda as jovyan and check the sha256 sum provided on the download site
+# Install conda as efx_container_user and check the sha256 sum provided on the download site
 WORKDIR /tmp
 
 # CONDA_MIRROR is a mirror prefix to speed up downloading
@@ -177,7 +178,7 @@ RUN sed -re "s/c.ServerApp/c.NotebookApp/g" \
 HEALTHCHECK  --interval=15s --timeout=3s --start-period=5s --retries=3 \
     CMD wget -O- --no-verbose --tries=1 http://localhost:8888/api || exit 1
 
-# Switch back to jovyan to avoid accidental container runs as root
+# Switch back to efx_container_user to avoid accidental container runs as root
 USER ${NB_UID}
 
 WORKDIR "${HOME}"
