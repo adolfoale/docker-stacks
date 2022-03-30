@@ -1,4 +1,6 @@
-FROM adolfoale/rstudio:base-notebook
+# Minimal notebook 
+
+FROM adolfoale/rstudio:minimal-notebook
 
 USER 0
 
@@ -24,5 +26,21 @@ RUN apt install -y --no-install-recommends r-cran-rstan
 RUN apt-get install -y gdebi-core
 RUN wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-2022.02.0-443-amd64.deb
 RUN echo "y\n" | gdebi rstudio-server-2022.02.0-443-amd64.deb
+
+
+# install java
+RUN apt update && apt install -y default-jre default-jdk build-essential cmake && java -version
+
+# odahu-rstudio/datascience.Dockerfile
+COPY install.R /opt/
+
+RUN R CMD javareconf && \
+    apt-get update && apt-get install -y libzmq3-dev libssl-dev libcurl4-openssl-dev libxml2-dev && \
+    ln -sf /usr/lib/x86_64-linux-gnu/libicui18n.so.64.2 /usr/lib/x86_64-linux-gnu/libicui18n.so.64 && \
+    ln -sf /usr/lib/x86_64-linux-gnu/libicui18n.so.64.2 /usr/lib/x86_64-linux-gnu/libicui18n.so && \
+    Rscript /opt/install.R --save && \
+    chown -R efx_container_user /usr/local/lib/R/ && \
+    Rscript -e "installed.packages()" > /opt/installed.packages.txt && \
+    cat /opt/installed.packages.txt
 
 USER 1000
